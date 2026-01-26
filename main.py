@@ -2,7 +2,8 @@ import sys
 import os
 import json
 if sys.platform == 'darwin':
-    os.environ["QT_MAC_WANTS_LAYER"] = "1"
+    # os.environ["QT_MAC_WANTS_LAYER"] = "1" # 禁用此行以防止打包后渲染崩溃
+    pass
 from PySide6.QtCore import Qt, QTimer, QPoint, QObject, Signal, Slot, QUrl, QThread
 from PySide6.QtWidgets import QApplication, QMainWindow, QSystemTrayIcon, QMenu
 from PySide6.QtWebEngineWidgets import QWebEngineView
