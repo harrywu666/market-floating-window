@@ -1,0 +1,315 @@
+:root {
+    --bg-app: rgba(14, 16, 18, 0.95);
+
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --card-border: rgba(255, 255, 255, 0.08);
+
+    --text-primary: #FFFFFF;
+    --text-secondary: #8E9199;
+
+    --col-up: #00EBA0;
+    --col-up-bg: rgba(0, 235, 160, 0.15);
+    --col-down: #FF4555;
+    --col-down-bg: rgba(255, 69, 85, 0.15);
+
+    --font-num: "SF Mono", "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+    --font-ui: "PingFang SC", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    height: 100vh;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: var(--font-ui);
+    color: var(--text-primary);
+    overflow: hidden;
+}
+
+.app-container {
+    width: 340px;
+    background: var(--bg-app);
+    border-radius: 24px;
+    padding: 20px;
+    /* Box Shadow Removed */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.drag-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    cursor: move;
+    z-index: 50;
+}
+
+/* Header */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 4px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+
+.app-name {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
+}
+
+.status-indicator {
+    width: 6px;
+    height: 6px;
+    background: var(--col-up);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--col-up);
+    display: inline-block;
+}
+
+/* Cards Container */
+.cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Card Common */
+.card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--card-border);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    /* 玻璃拟态微效 */
+    backdrop-filter: blur(10px);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.card-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    /* Brighter */
+    margin-right: 6px;
+}
+
+.card-symbol {
+    font-size: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 4px;
+    border-radius: 4px;
+    color: var(--text-secondary);
+}
+
+.market-tag {
+    font-size: 9px;
+    background: rgba(255, 170, 0, 0.25);
+    color: #FFAA00;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: auto;
+    display: none;
+    border: 1px solid rgba(255, 170, 0, 0.4);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Card Body Rows */
+.data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.data-row:last-child {
+    margin-bottom: 0;
+}
+
+.row-label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    /* Brighter from #8E9199 */
+    font-weight: 600;
+}
+
+.row-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.big-price {
+    font-family: var(--font-num);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+}
+
+.big-price.small-mod {
+    font-size: 20px;
+}
+
+.change-tag {
+    font-family: var(--font-num);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 6px;
+    min-width: 50px;
+    text-align: center;
+}
+
+.change-tag.up {
+    background: var(--col-up-bg);
+    color: var(--col-up);
+}
+
+.change-tag.down {
+    background: var(--col-down-bg);
+    color: var(--col-down);
+}
+
+/* 价格变动动画 */
+@keyframes flash-up {
+    0% {
+        background-color: rgba(0, 235, 160, 0.3);
+    }
+
+    100% {
+        background-color: transparent;
+    }
+}
+
+@keyframes flash-down {
+    0% {
+        background-color: rgba(255, 69, 85, 0.3);
+    }
+
+    100% {
+        background-color: transparent;
+    }
+}
+
+.price-updated-up {
+    animation: flash-up 0.5s ease-out;
+}
+
+.price-updated-down {
+    animation: flash-down 0.5s ease-out;
+}
+
+.row-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    margin: 8px 0;
+}
+
+/* Crypto Specific */
+.crypto-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.crypto-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+}
+
+.c-sym {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+    /* Brighter */
+    width: 40px;
+}
+
+.c-price {
+    font-family: var(--font-num);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+    text-align: right;
+    margin-right: 10px;
+}
+
+.c-change {
+    font-family: var(--font-num);
+    font-size: 11px;
+    font-weight: 600;
+    width: 50px;
+    text-align: right;
+}
+
+.c-change.up {
+    color: var(--col-up);
+}
+
+.c-change.down {
+    color: var(--col-down);
+}
+
+/* Footer */
+.footer-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+    padding: 0 4px;
+}
+
+.exchange-display,
+.time-display {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.8);
+    /* Significantly brighter */
+    font-family: var(--font-num);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.rate-val {
+    color: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+}

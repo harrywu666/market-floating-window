@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Monitor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container" id="main-container">
+        <div class="drag-handle"></div>
+
+        <!-- Header -->
+        <div class="app-header">
+            <span class="app-name">市场行情</span>
+            <div class="header-right">
+                <!-- Status Dot Top Right -->
+                <div class="status-indicator active" id="status-dot"></div>
+            </div>
+        </div>
+
+        <div class="cards-container">
+
+            <!-- Gold Card -->
+            <div class="card" id="section-gold">
+                <div class="card-header">
+                    <span class="card-label">黄金</span>
+                    <span class="card-symbol">XAU</span>
+                    <span id="gold-market-status" class="market-tag"></span>
+                </div>
+
+                <div class="card-body">
+                    <!-- International -->
+                    <div class="data-row">
+                        <div class="row-label">国际 (USD/oz)</div>
+                        <div class="row-content">
+                            <div class="big-price" id="gold-intl-price">--</div>
+                            <div class="change-tag" id="gold-intl-change">--</div>
+                        </div>
+                    </div>
+
+                    <div class="row-divider"></div>
+
+                    <!-- Domestic -->
+                    <div class="data-row">
+                        <div class="row-label">国内 (CNY/g)</div>
+                        <div class="row-content">
+                            <div class="big-price" id="gold-dom-price">--</div>
+                            <div class="change-tag" id="gold-dom-change">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Silver Card -->
+            <div class="card" id="section-silver">
+                <div class="card-header">
+                    <span class="card-label">白银</span>
+                    <span class="card-symbol">XAG</span>
+                    <span id="silver-market-status" class="market-tag"></span>
+                </div>
+
+                <div class="card-body">
+                    <div class="data-row">
+                        <div class="row-label">国际 (USD/oz)</div>
+                        <div class="row-content">
+                            <div class="big-price small-mod" id="silver-intl-price">--</div>
+                            <div class="change-tag" id="silver-intl-change">--</div>
+                        </div>
+                    </div>
+
+                    <div class="row-divider"></div>
+
+                    <div class="data-row">
+                        <div class="row-label">国内 (CNY/g)</div>
+                        <div class="row-content">
+                            <div class="big-price small-mod" id="silver-dom-price">--</div>
+                            <div class="change-tag" id="silver-dom-change">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crypto Card -->
+            <div class="card" id="section-crypto">
+                <div class="card-header">
+                    <span class="card-label">加密货币</span>
+                </div>
+                <!-- Crypto List -->
+                <div class="crypto-list" id="crypto-list">
+                    <!-- Dynamic -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-info">
+            <!-- Exchange Rate Bottom Left -->
+            <div class="exchange-display">汇率 <span id="exchange-rate" class="rate-val">--</span></div>
+            <!-- Time Bottom Right -->
+            <div class="time-display" id="update-time">--:--:--</div>
+        </div>
+    </div>
+
+    <script>
+        const defaultConfig = {
+            "gold": true, "silver": true, "crypto": true,
+            "BTC": true, "ETH": true, "SOL": true, "BNB": true, "HYPE": true
+        };
+        let stored = {};
+        try { stored = JSON.parse(localStorage.getItem('gold_monitor_v4') || '{}'); } catch (e) { }
+        const config = { ...defaultConfig, ...stored };
+        const cryptoOrder = ['BTC', 'ETH', 'BNB', 'SOL', 'HYPE'];
+
+        function applyConfig() {
+            ['gold', 'silver', 'crypto'].forEach(key => {
+                const el = document.getElementById('section-' + key);
+                if (el) el.style.display = config[key] ? 'flex' : 'none';
+            });
+            updateCryptoStyles();
+        }
+
+        function updateCryptoStyles() {
+            cryptoOrder.forEach(symbol => {
+                const el = document.getElementById('crypto-' + symbol);
+                if (el) el.style.display = config[symbol] ? 'flex' : 'none';
+            });
+        }
+        applyConfig();
+
+        function toggleSection(key) {
+            config[key] = !config[key];
+            localStorage.setItem('gold_monitor_v4', JSON.stringify(config));
+            applyConfig();
+        }
+
+        function updateUI(data) {
+            if (data.error) console.warn("Fetch Error:", data.error);
+
+            if (data.exchange_rate) {
+                document.getElementById('exchange-rate').innerText = data.exchange_rate.toFixed(4);
+            }
+
+            if (config.gold && data.gold) {
+                updateFullRow('gold-intl', data.gold.intl, data.gold.intl_change, 2);
+                updateFullRow('gold-dom', data.gold.dom, data.gold.dom_change, 2);
+            }
+
+            if (config.silver && data.silver) {
+                updateFullRow('silver-intl', data.silver.intl, data.silver.intl_change, 2);
+                updateFullRow('silver-dom', data.silver.dom, data.silver.dom_change, 2);
+            }
+
+            if (config.crypto && data.crypto) {
+                renderCrypto(data.crypto);
+            }
+
+            if (data.market_status) {
+                updateStatus('gold', data.market_status.gold);
+                updateStatus('silver', data.market_status.silver);
+            }
+
+            document.getElementById('update-time').innerText = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+        }
+
+        // 存储上次价格用于动画判断
+        const lastPrices = {};
+
+        function updateFullRow(prefix, price, change, prec) {
+            const pEl = document.getElementById(prefix + '-price');
+            const cEl = document.getElementById(prefix + '-change');
+            if (!pEl) return;
+
+            const pVal = parseFloat(price || 0).toFixed(prec);
+            const cVal = parseFloat(change || 0);
+            const cTxt = (cVal >= 0 ? '+' : '') + cVal.toFixed(2) + '%';
+
+            // 判断价格变动方向并触发动画
+            const lastPrice = lastPrices[prefix];
+            const currentPrice = parseFloat(price || 0);
+            if (lastPrice !== undefined && lastPrice !== currentPrice && pEl.innerText !== '--') {
+                const direction = currentPrice > lastPrice ? 'up' : 'down';
+                pEl.classList.remove('price-updated-up', 'price-updated-down');
+                void pEl.offsetWidth; // 强制重绘
+                pEl.classList.add('price-updated-' + direction);
+            }
+            lastPrices[prefix] = currentPrice;
+
+            if (pEl.innerText !== pVal) pEl.innerText = pVal;
+            if (cEl.innerText !== cTxt) cEl.innerText = cTxt;
+
+            const state = cVal >= 0 ? 'up' : 'down';
+            pEl.className = 'big-price ' + state + (prefix.includes('silver') ? ' small-mod' : '');
+            cEl.className = 'change-tag ' + state;
+        }
+
+        function updateStatus(type, status) {
+            const el = document.getElementById(type + '-market-status');
+            if (!el) return;
+            if (status === 'closed') {
+                el.innerText = '休市';
+                el.style.display = 'inline-block';
+            } else {
+                el.innerText = '';
+                el.style.display = 'none';
+            }
+        }
+
+        function renderCrypto(data) {
+            const container = document.getElementById('crypto-list');
+            cryptoOrder.forEach(symbol => {
+                if (!data[symbol]) return;
+                let row = document.getElementById('crypto-' + symbol);
+                if (!row) {
+                    row = document.createElement('div');
+                    row.id = 'crypto-' + symbol;
+                    row.className = 'crypto-row';
+                    row.innerHTML = `<span class="c-sym">${symbol}</span>
+                                     <span class="c-price">--</span>
+                                     <span class="c-change">--</span>`;
+                    container.appendChild(row);
+                }
+
+                if (!config[symbol]) {
+                    row.style.display = 'none';
+                    return;
+                } else {
+                    row.style.display = 'flex';
+                }
+
+                const info = data[symbol];
+                // 统一保留两位小数
+                const pVal = info.price.toFixed(2);
+                row.querySelector('.c-price').innerText = pVal;
+
+                const cVal = info.change;
+                const cEl = row.querySelector('.c-change');
+                cEl.innerText = (cVal >= 0 ? '+' : '') + cVal.toFixed(2) + '%';
+                cEl.className = 'c-change ' + (cVal >= 0 ? 'up' : 'down');
+            });
+        }
+
+
+    </script>
+</body>
+
+</html>
