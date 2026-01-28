@@ -270,7 +270,13 @@ def main():
     # 系统托盘
     tray = QSystemTrayIcon(app)
     icon_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "ui", "gold.png"))
-    tray.setIcon(QIcon(icon_path)) 
+    
+    icon = QIcon(icon_path)
+    app.setWindowIcon(icon) # 设置应用程序图标
+    tray.setIcon(icon)
+    
+    if not QSystemTrayIcon.isSystemTrayAvailable():
+        print("System tray is NOT available on this system.")
     
     menu = QMenu()
     

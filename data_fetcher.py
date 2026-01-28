@@ -71,9 +71,16 @@ class GoldDataFetcher:
             resp = self.session.get(url, timeout=2.0).json()
             if isinstance(resp, dict) and resp.get('code') == '0' and resp.get('data'):
                 ticker = resp['data'][0]
+                last = self._safe_float(ticker.get('last'))
+                open24 = self._safe_float(ticker.get('open24h'))
+                
+                change = 0.0
+                if open24 > 0:
+                    change = (last - open24) / open24 * 100
+
                 return name, {
-                    "price": self._safe_float(ticker.get('last')),
-                    "change": self._safe_float(ticker.get('change24h'))
+                    "price": last,
+                    "change": change
                 }
         except Exception as e:
             print(f"OKX API 获取 {name} 失败: {e}")
@@ -88,9 +95,16 @@ class GoldDataFetcher:
             resp = self.session.get(url, timeout=2.0).json()
             if isinstance(resp, dict) and resp.get('code') == '0' and resp.get('data'):
                 ticker = resp['data'][0]
+                last = self._safe_float(ticker.get('last'))
+                open24 = self._safe_float(ticker.get('open24h'))
+                
+                change = 0.0
+                if open24 > 0:
+                    change = (last - open24) / open24 * 100
+
                 return name, {
-                    "price": self._safe_float(ticker.get('last')),
-                    "change": self._safe_float(ticker.get('change24h'))
+                    "price": last,
+                    "change": change
                 }
         except Exception as e:
             print(f"OKX 合约 API 获取 {name} 失败: {e}")
