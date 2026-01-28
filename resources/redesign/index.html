@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Market Monitor</title>
+    <!-- 引入 Inter 字体提升排版质感 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-window shell" id="app">
+        <div class="drag-handle"></div>
+
+        <!-- 头部区域 -->
+        <header class="header">
+            <div class="brand">
+                <h1 class="brand-name">市场概览</h1>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span id="sync-status">实时</span>
+            </div>
+        </header>
+
+        <!-- 黄金卡片 -->
+        <section class="asset-card" id="card-gold">
+            <div class="asset-info">
+                <div class="asset-name-group">
+                    <h2 class="asset-title">黄金 XAU</h2>
+                </div>
+            </div>
+
+            <div class="price-row" id="row-gold-intl">
+                <span class="price-label">国际 (USD/oz)</span>
+                <div class="price-value-group">
+                    <div class="price-main" id="gold-intl-price">2024.50</div>
+                    <div class="price-change up" id="gold-intl-change">+0.42%</div>
+                </div>
+            </div>
+
+            <div class="price-row" id="row-gold-dom">
+                <span class="price-label">国内 (CNY/g)</span>
+                <div class="price-value-group">
+                    <div class="price-main" id="gold-dom-price">485.20</div>
+                    <div class="price-change down" id="gold-dom-change">-0.15%</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 白银卡片 -->
+        <section class="asset-card" id="card-silver">
+            <div class="asset-info">
+                <div class="asset-name-group">
+                    <h2 class="asset-title">白银 XAG</h2>
+                </div>
+            </div>
+
+            <div class="price-row" id="row-silver-intl">
+                <span class="price-label">国际 (USD/oz)</span>
+                <div class="price-value-group">
+                    <div class="price-main" id="silver-intl-price">22.85</div>
+                    <div class="price-change up" id="silver-intl-change">+1.24%</div>
+                </div>
+            </div>
+
+            <div class="price-row" id="row-silver-dom">
+                <span class="price-label">国内 (CNY/g)</span>
+                <div class="price-value-group">
+                    <div class="price-main" id="silver-dom-price">5.62</div>
+                    <div class="price-change down" id="silver-dom-change">-0.08%</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 加密货币列表 -->
+        <section class="crypto-section">
+            <div class="asset-label" style="margin-bottom: 4px; padding-left: 4px;">Cryptocurrency</div>
+
+            <!-- BTC -->
+            <div class="crypto-item">
+                <div class="crypto-symbol">BTC</div>
+                <div class="crypto-name">Bitcoin</div>
+                <div class="crypto-price-group">
+                    <div class="crypto-price" id="crypto-BTC-price">43,250.00</div>
+                    <div class="crypto-change up" id="crypto-BTC-change">+2.45%</div>
+                </div>
+            </div>
+
+            <!-- ETH -->
+            <div class="crypto-item">
+                <div class="crypto-symbol">ETH</div>
+                <div class="crypto-name">Ethereum</div>
+                <div class="crypto-price-group">
+                    <div class="crypto-price" id="crypto-ETH-price">2,340.15</div>
+                    <div class="crypto-change down" id="crypto-ETH-change">-1.12%</div>
+                </div>
+            </div>
+
+            <!-- SOL -->
+            <div class="crypto-item">
+                <div class="crypto-symbol">SOL</div>
+                <div class="crypto-name">Solana</div>
+                <div class="crypto-price-group">
+                    <div class="crypto-price" id="crypto-SOL-price">98.42</div>
+                    <div class="crypto-change up" id="crypto-SOL-change">+5.67%</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 底部元信息 -->
+        <footer class="footer">
+            <div class="meta-info">
+                USD/CNY <span class="meta-value" id="fx-rate">7.1942</span>
+            </div>
+            <div class="meta-info">
+                更新于 <span class="meta-value" id="last-update">18:24:50</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // 模拟数据更新逻辑，仅用于演示动画效果
+        function simulateUpdates() {
+            setInterval(() => {
+                const elements = [
+                    { id: 'gold-intl-price', change: 'gold-intl-change', base: 2024.50, var: 2 },
+                    { id: 'silver-intl-price', change: 'silver-intl-change', base: 22.85, var: 0.5 },
+                    { id: 'crypto-BTC-price', change: 'crypto-BTC-change', base: 43250.00, var: 100 }
+                ];
+
+                const target = elements[Math.floor(Math.random() * elements.length)];
+                const el = document.getElementById(target.id);
+                const cEl = document.getElementById(target.change);
+
+                const oldPrice = parseFloat(el.innerText.replace(/,/g, ''));
+                const newPrice = target.base + (Math.random() - 0.5) * target.var;
+                const direction = newPrice > oldPrice ? 'up' : 'down';
+
+                el.innerText = newPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                // 触发酷炫的闪烁动画
+                const parentRow = el.closest('.price-row') || el.closest('.crypto-item');
+                parentRow.classList.remove('flash-up', 'flash-down');
+                void parentRow.offsetWidth; // 触发重绘
+                parentRow.classList.add('flash-' + direction);
+
+                // 更新百分比演示
+                const diff = ((newPrice - target.base) / target.base * 100).toFixed(2);
+                cEl.innerText = (diff >= 0 ? '+' : '') + diff + '%';
+                cEl.className = 'price-change ' + (diff >= 0 ? 'up' : 'down');
+                if (cEl.classList.contains('crypto-change')) cEl.className = 'crypto-change ' + (diff >= 0 ? 'up' : 'down');
+
+            }, 3000);
+        }
+
+        // 初始化更新时间
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('last-update').innerText = now.toTimeString().split(' ')[0];
+        }
+
+        // simulateUpdates();
+        setInterval(updateTime, 1000);
+    </script>
+</body>
+
+</html>

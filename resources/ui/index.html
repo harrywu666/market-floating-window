@@ -243,6 +243,80 @@
             });
         }
 
+        // Pin Button Functionality
+        let isPinned = false;
+        window.pinState = false;  // 立即初始化供Python轮询读取
+        const pinBtn = document.getElementById('pin-btn');
+
+        pinBtn.addEventListener('click', function () {
+            isPinned = !isPinned;
+            pinBtn.classList.toggle('active', isPinned);
+            pinBtn.title = isPinned ? '取消置顶' : '置顶窗口';
+
+            // 存储状态供Python轮询读取
+            window.pinState = isPinned;
+
+            console.log('置顶按钮点击，当前状态:', isPinned);
+        });
+
+        // Function to be called from Python to sync pin state
+        function setPinState(pinned) {
+            isPinned = pinned;
+            window.pinState = isPinned;  // 确保同步更新
+            pinBtn.classList.toggle('active', isPinned);
+            pinBtn.title = isPinned ? '取消置顶' : '置顶窗口';
+        }
+
+        // Expose function for Python to call
+        window.getPinState = function () {
+            return isPinned;
+        };
+
+        // ============ 拖动处理 ============
+        // 初始化拖动状态
+        window.dragState = null;
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        const dragHandle = document.querySelector('.drag-handle');
+
+        if (dragHandle) {
+            dragHandle.addEventListener('mousedown', function (e) {
+                if (e.button === 0) { // 只响应左键
+                    isDragging = true;
+                    dragStartX = e.screenX;
+                    dragStartY = e.screenY;
+                    window.dragState = { action: 'start', x: e.screenX, y: e.screenY };
+                    console.log('拖动开始');
+                }
+            });
+        }
+
+        document.addEventListener('mousemove', function (e) {
+            if (isDragging) {
+                const deltaX = e.screenX - dragStartX;
+                const deltaY = e.screenY - dragStartY;
+                window.dragState = { action: 'move', deltaX: deltaX, deltaY: deltaY, x: e.screenX, y: e.screenY };
+                dragStartX = e.screenX;
+                dragStartY = e.screenY;
+            }
+        });
+
+        document.addEventListener('mouseup', function (e) {
+            if (isDragging) {
+                isDragging = false;
+                window.dragState = { action: 'end' };
+                console.log('拖动结束');
+            }
+        });
+
+        // 右键菜单处理 - 通知Python打开菜单
+        window.contextMenuRequest = null;
+        document.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+            window.contextMenuRequest = { x: e.screenX, y: e.screenY };
+            console.log('右键菜单请求');
+        });
 
     </script>
 </body>

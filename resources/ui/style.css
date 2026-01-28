@@ -49,12 +49,16 @@ body {
 
 .drag-handle {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 15px;
+    left: 90px;
+    /* 从"市场行情"右侧开始 */
+    right: 55px;
+    /* 在置顶按钮左侧结束 */
     height: 30px;
     cursor: move;
     z-index: 50;
+    /* 调试用，正式版可删除 */
+    /* background: rgba(255, 0, 0, 0.2); */
 }
 
 /* Header */
@@ -87,6 +91,36 @@ body {
     border-radius: 50%;
     box-shadow: 0 0 6px var(--col-up);
     display: inline-block;
+}
+
+/* Pin Button */
+.pin-btn {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.35);
+    transition: all 0.2s ease;
+    border-radius: 3px;
+    margin-right: 6px;
+}
+
+.pin-btn:hover {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.pin-btn.active {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.pin-btn svg {
+    width: 14px;
+    height: 14px;
 }
 
 /* Cards Container */

@@ -6,3 +6,18 @@ __pycache__/
 .venv
 env/
 venv/
+
+# 备份文件
+.backup/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 打包输出
+build/
+dist/
+*.app
+*.dmg

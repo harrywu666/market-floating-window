@@ -1,5 +1,6 @@
 #!/bin/bash
-cd "$(dirname "$0")"
+# 切换到项目根目录（scripts的父目录）
+cd "$(dirname "$0")/.."
 echo "正在安装必要的运行库 (Installing dependencies)..."
 echo "这可能需要几分钟，请耐心等待..."
 echo "----------------------------------------"
