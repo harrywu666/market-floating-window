@@ -60,34 +60,7 @@ class GoldDataFetcher:
             print(f"东方财富 API 获取 {secid} 失败: {e}")
         return None
 
-    def _fetch_crypto_from_binance(self, name, sym):
-        """从币安获取单个加密货币现货数据"""
-        try:
-            url = f"https://api.binance.com/api/v3/ticker/24hr?symbol={sym}"
-            resp = self.session.get(url, timeout=2.0).json()
-            if isinstance(resp, dict) and 'lastPrice' in resp:
-                return name, {
-                    "price": self._safe_float(resp['lastPrice']),
-                    "change": self._safe_float(resp.get('priceChangePercent', 0.0))
-                }
-        except Exception as e:
-            print(f"币安 API 获取 {name} 失败: {e}")
-        return name, None
 
-    def _fetch_contract_from_binance(self, name, sym):
-        """从币安获取合约数据（用于只有合约无现货的币种）"""
-        try:
-            # 使用合约 API
-            url = f"https://fapi.binance.com/fapi/v1/ticker/24hr?symbol={sym}"
-            resp = self.session.get(url, timeout=2.0).json()
-            if isinstance(resp, dict) and 'lastPrice' in resp:
-                return name, {
-                    "price": self._safe_float(resp['lastPrice']),
-                    "change": self._safe_float(resp.get('priceChangePercent', 0.0))
-                }
-        except Exception as e:
-            print(f"币安合约 API 获取 {name} 失败: {e}")
-        return name, None
 
     def _fetch_crypto_from_okx(self, name, sym):
         """从OKX获取单个加密货币现货数据"""
@@ -124,37 +97,21 @@ class GoldDataFetcher:
         return name, None
 
     def _fetch_single_crypto(self, name, sym):
-        """获取单个加密货币数据，优先币安，失败则切换OKX"""
-        # HYPE 获取顺序：币安合约 -> OKX 现货 -> OKX 合约
-        if name == "HYPE":
-            # 1. 首先尝试币安合约
-            result = self._fetch_contract_from_binance(name, sym)
-            if result[1] is not None:
-                return result
-            # 2. 币安合约失败，尝试 OKX 现货
-            print(f"币安合约获取 {name} 失败，切换到 OKX 现货...")
-            result = self._fetch_crypto_from_okx(name, sym)
-            if result[1] is not None:
-                return result
-            # 3. OKX 现货失败，尝试 OKX 合约
-            print(f"OKX 现货获取 {name} 失败，切换到 OKX 合约...")
-            result = self._fetch_contract_from_okx(name, sym)
-            if result[1] is not None:
-                return result
-            return name, None
-
-        # 首先尝试币安现货
-        result = self._fetch_crypto_from_binance(name, sym)
-        if result[1] is not None:
-            return result
-
-        # 币安失败，尝试OKX现货
-        print(f"币安获取 {name} 失败，切换到 OKX...")
+        """获取单个加密货币数据，仅使用OKX"""
+        
+        # 1. 尝试 OKX 现货
         result = self._fetch_crypto_from_okx(name, sym)
         if result[1] is not None:
             return result
-
-        # 两者都失败
+            
+        # 2. 现货失败，尝试 OKX 合约 (主要针对 HYPE 等可能只在合约上线的币种)
+        print(f"OKX 现货获取 {name} 失败，尝试 OKX 合约...")
+        result = self._fetch_contract_from_okx(name, sym)
+        if result[1] is not None:
+            return result
+            
+        # 3. 都失败
+        print(f"OKX 所有渠道获取 {name} 失败")
         return name, None
 
     def fetch_all(self):
